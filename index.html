@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudySync - Notes & PYQ Platform</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span>StudySync</span>
+                </div>
+                <nav>
+                    <ul>
+                        <li><a href="#" class="active">Home</a></li>
+                        <li><a href="#subjects">Subjects</a></li>
+                        <li><a href="#resources">Resources</a></li>
+                        <li><a href="#about">About</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container hero-attractive">
+            <h1>Your Ultimate Study Companion</h1>
+            <p>Access high-quality notes, previous year question papers, and study resources for all subjects.</p>
+            <a href="#subjects" class="cta-btn">Start Learning <i class="fas fa-arrow-right"></i></a>
+        </div>
+    </section>
+
+    <!-- Subjects Section -->
+    <section class="subjects" id="subjects">
+        <div class="container">
+            <div class="section-title">
+                <h2>Available Subjects</h2>
+                <p>Select a subject to access notes and previous year questions</p>
+            </div>
+            <div class="subjects-grid" id="subjectsGrid">
+                <!-- Subjects will be populated by JavaScript -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Resources Section -->
+    <section class="resources" id="resources">
+        <div class="container">
+            <div class="section-title">
+                <h2>Subject Resources</h2>
+                <p id="currentSubject">Select a subject to view resources</p>
+            </div>
+            <div class="resource-tabs">
+                <button class="tab-btn active" data-type="notes">Notes</button>
+                <button class="tab-btn" data-type="pyq">Previous Year Questions</button>
+            </div>
+            <div class="resources-grid" id="resourcesGrid">
+                <!-- Resources will be populated by JavaScript -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Disclaimer Section -->
+    <section class="disclaimer-section">
+        <div class="container">
+            <p class="disclaimer-text">
+                <strong>Disclaimer:</strong> All notes and previous year question papers provided here are collected from publicly available sources on the internet. StudySync does not claim ownership or copyright over these materials. If you are a copyright holder and wish to have any content removed, please contact us.
+            </p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer-attractive">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3>StudySync</h3>
+                    <p>Your ultimate study companion for notes, PYQs, and academic resources.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+                <div class="footer-column">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="#">Home</a></li>
+                        <li><a href="#subjects">Subjects</a></li>
+                        <li><a href="#resources">Resources</a></li>
+                        <li><a href="#about">About</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Contact Us</h3>
+                    <ul>
+                        <li><i class="fas fa-envelope"></i> contact@studysync.com</li>
+                        <li><i class="fas fa-phone"></i> +91 0123-45679</li>
+                        <li><i class="fas fa-map-marker-alt"></i> 123 Education Street</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="visitor-count" id="visitorCount" style="text-align:center; color:#fff; margin-top:10px; font-size:1rem;"></div>
+            <div class="copyright">
+                <p>&copy; 2025 StudySync. Made with <span style="color:#e63946;">&#10084;&#65039;</span> for students.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Loading Spinner -->
+    <div class="loading-spinner" id="loadingSpinner">
+        <div class="spinner"></div>
+        <p>Loading resources...</p>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // Visitor count fetch
+        fetch('/api/visitor-count')
+          .then(res => res.json())
+          .then(data => {
+            document.getElementById('visitorCount').textContent = `Visitors: ${data.count}`;
+          })
+          .catch(() => {
+            document.getElementById('visitorCount').textContent = '';
+          });
+    </script>
+</body>
+</html>
