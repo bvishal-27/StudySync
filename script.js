@@ -1,5 +1,5 @@
 // StudySync - Notes & PYQ Platform
-// This is a frontend simulation - in a real application, you would need a backend to serve files
+// Enhanced with Google Analytics Tracking
 
 document.addEventListener('DOMContentLoaded', function() {
     // Sample data structure matching your folder organization
@@ -86,8 +86,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const subjectsGrid = document.getElementById('subjectsGrid');
     const resourcesGrid = document.getElementById('resourcesGrid');
     const currentSubjectEl = document.getElementById('currentSubject');
-    const searchInput = document.getElementById('searchInput');
-    const searchBtn = document.getElementById('searchBtn');
     const loadingSpinner = document.getElementById('loadingSpinner');
     const tabBtns = document.querySelectorAll('.tab-btn');
     
@@ -96,13 +94,103 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentResourceType = 'notes';
     let allResources = [];
 
+    // Analytics Tracking Functions
+    function trackSubjectView(subjectKey) {
+        if (typeof gtag !== 'undefined') {
+            const subject = subjectsData[subjectKey];
+            gtag('event', 'subject_view', {
+                event_category: 'navigation',
+                event_label: subject.name,
+                subject_name: subject.name,
+                subject_code: subject.code
+            });
+        }
+        console.log('📊 Tracked subject view:', subjectKey);
+    }
+
+    function trackResourceDownload(resourceName, resourceType, subjectKey) {
+        if (typeof gtag !== 'undefined') {
+            const subject = subjectsData[subjectKey];
+            gtag('event', 'resource_download', {
+                event_category: 'download',
+                event_label: resourceName,
+                resource_name: resourceName,
+                resource_type: resourceType,
+                subject_name: subject.name,
+                subject_code: subject.code,
+                download_timestamp: new Date().toISOString()
+            });
+        }
+        console.log('📊 Tracked resource download:', resourceName, resourceType, subjectKey);
+    }
+
+    function trackTabSwitch(tabType) {
+        if (typeof gtag !== 'undefined') {
+            gtag('event', 'tab_switch', {
+                event_category: 'navigation',
+                event_label: tabType,
+                tab_name: tabType,
+                current_subject: currentSubject
+            });
+        }
+        console.log('📊 Tracked tab switch:', tabType);
+    }
+
+    function trackSearch(query, resultsCount) {
+        if (typeof gtag !== 'undefined') {
+            gtag('event', 'search_performed', {
+                event_category: 'engagement',
+                event_label: query,
+                search_query: query,
+                results_count: resultsCount,
+                search_timestamp: new Date().toISOString()
+            });
+        }
+        console.log('📊 Tracked search:', query, resultsCount);
+    }
+
+    function trackPageView(pageName) {
+        if (typeof gtag !== 'undefined') {
+            gtag('event', 'page_view', {
+                page_name: pageName,
+                page_path: window.location.pathname,
+                current_section: pageName.toLowerCase()
+            });
+        }
+    }
+
     // Initialize the application
     function init() {
+        console.log('🚀 StudySync initialized with analytics');
         renderSubjects();
+        setupScrollTracking();
+    }
+
+    // Track scroll depth
+    function setupScrollTracking() {
+        let scrollTracked = false;
+        
+        window.addEventListener('scroll', function() {
+            const scrollDepth = Math.round((window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100);
+            
+            if (scrollDepth > 50 && !scrollTracked) {
+                if (typeof gtag !== 'undefined') {
+                    gtag('event', 'scroll_depth', {
+                        event_category: 'engagement',
+                        event_label: '50_percent_scroll',
+                        scroll_percentage: 50
+                    });
+                }
+                scrollTracked = true;
+            }
+        });
     }
 
     // Select a subject and display its resources
     function selectSubject(subjectKey) {
+        // Track subject selection
+        trackSubjectView(subjectKey);
+        
         // Update UI
         document.querySelectorAll('.subject-card').forEach(card => {
             card.classList.remove('active');
@@ -161,9 +249,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         <span><i class="fas ${icon}"></i> ${resourceType}</span>
                         ${resource.year ? `<span><i class="fas fa-calendar"></i> ${resource.year}</span>` : ''}
                     </div>
-                    <a class="download-btn" href="${resource.filename}" download>
+                    <button class="download-btn" data-filename="${resource.filename}" data-resource-name="${resource.name}" data-resource-type="${currentResourceType}">
                         Download <i class="fas fa-download"></i>
-                    </a>
+                    </button>
                 </div>
             `;
             
@@ -202,11 +290,13 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
             subjectsGrid.appendChild(subjectCard);
         });
+        
         // Select first subject by default
         if (Object.keys(subjectsData).length > 0) {
             const firstSubject = Object.keys(subjectsData)[0];
             selectSubject(firstSubject);
         }
+        
         // Attach event listeners after rendering
         setupEventListeners();
     }
@@ -227,26 +317,28 @@ document.addEventListener('DOMContentLoaded', function() {
                 tabBtns.forEach(b => b.classList.remove('active'));
                 this.classList.add('active');
                 currentResourceType = this.dataset.type;
+                
+                // Track tab switch
+                trackTabSwitch(currentResourceType);
+                
                 renderResources();
             });
         });
         
-        // Search functionality
-        searchBtn.addEventListener('click', performSearch);
-        searchInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                performSearch();
-            }
-        });
-        
-        // Download buttons (simulated)
+        // Download buttons
         document.addEventListener('click', function(e) {
             if (e.target.classList.contains('download-btn') || 
                 e.target.closest('.download-btn')) {
                 const btn = e.target.classList.contains('download-btn') ? 
                     e.target : e.target.closest('.download-btn');
                 const filename = btn.dataset.filename;
-                simulateDownload(filename);
+                const resourceName = btn.dataset.resourceName;
+                const resourceType = btn.dataset.resourceType;
+                
+                // Track download
+                trackResourceDownload(resourceName, resourceType, currentSubject);
+                
+                simulateDownload(filename, resourceName);
             }
         });
         
@@ -260,6 +352,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 const targetElement = document.querySelector(targetId);
                 if (targetElement) {
+                    // Track navigation
+                    trackPageView(targetId.substring(1));
+                    
                     window.scrollTo({
                         top: targetElement.offsetTop - 80,
                         behavior: 'smooth'
@@ -267,24 +362,57 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         });
+
+        // Track hero section CTA button
+        const startLearningBtn = document.getElementById('startLearningBtn');
+        if (startLearningBtn) {
+            startLearningBtn.addEventListener('click', function() {
+                if (typeof gtag !== 'undefined') {
+                    gtag('event', 'cta_click', {
+                        event_category: 'engagement',
+                        event_label: 'start_learning_hero',
+                        button_location: 'hero_section'
+                    });
+                }
+            });
+        }
     }
 
-    // Simulate file download
-    function simulateDownload(filename) {
+    // Simulate file download with enhanced tracking
+    function simulateDownload(filename, resourceName) {
         showLoading();
         
+        // Track download start
+        if (typeof gtag !== 'undefined') {
+            gtag('event', 'download_start', {
+                event_category: 'download',
+                event_label: resourceName,
+                filename: filename
+            });
+        }
+
         // In a real application, this would be an actual file download
         // For simulation, we'll just show a success message after a delay
         setTimeout(() => {
             hideLoading();
             
+            // Track download completion
+            if (typeof gtag !== 'undefined') {
+                gtag('event', 'download_complete', {
+                    event_category: 'download',
+                    event_label: resourceName,
+                    filename: filename,
+                    download_time: 1500 // ms
+                });
+            }
+
             // Create and show download success notification
             const notification = document.createElement('div');
             notification.style.cssText = `
                 position: fixed;
                 top: 20px;
                 right: 20px;
-                background: var(--success);
+                background: #10b981;
                 color: white;
                 padding: 15px 20px;
                 border-radius: 5px;
@@ -293,11 +421,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 display: flex;
                 align-items: center;
                 gap: 10px;
+                font-family: Arial, sans-serif;
             `;
             
             notification.innerHTML = `
                 <i class="fas fa-check-circle"></i>
-                <span>Download started: ${filename}</span>
+                <span>Download started: ${resourceName}</span>
             `;
             
             document.body.appendChild(notification);
@@ -307,69 +436,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 notification.style.opacity = '0';
                 notification.style.transition = 'opacity 0.5s';
                 setTimeout(() => {
-                    document.body.removeChild(notification);
+                    if (notification.parentNode) {
+                        document.body.removeChild(notification);
+                    }
                 }, 500);
             }, 3000);
         }, 1500);
     }
 
-    // Search functionality
-    function performSearch() {
-        const query = searchInput.value.trim().toLowerCase();
-        if (!query) {
-            // If search is empty, show resources for the current subject
-            renderResources();
-            return;
-        }
-        // Search across both notes and pyq for the current subject
-        if (!currentSubject) return;
-        const subject = subjectsData[currentSubject];
-        const resources = [...subject.notes.map(r => ({...r, type: 'notes'})), ...subject.pyq.map(r => ({...r, type: 'pyq'}))];
-        const filteredResources = resources.filter(resource => 
-            resource.name.toLowerCase().includes(query) ||
-            (resource.subjectName ? resource.subjectName.toLowerCase().includes(query) : false) ||
-            (resource.subjectCode ? resource.subjectCode.toLowerCase().includes(query) : false)
-        );
-        resourcesGrid.innerHTML = '';
-        if (filteredResources.length === 0) {
-            resourcesGrid.innerHTML = `
-                <div class="empty-state">
-                    <i class="fas fa-search"></i>
-                    <h3>No results found</h3>
-                    <p>Try different keywords or browse all resources</p>
-                </div>
-            `;
-            return;
-        }
-        filteredResources.forEach(resource => {
-            const resourceCard = document.createElement('div');
-            resourceCard.className = 'resource-card';
-            const resourceType = resource.type === 'notes' ? 'Notes' : 'PYQ';
-            const icon = resource.type === 'notes' ? 'fa-file-alt' : 'fa-question-circle';
-            resourceCard.innerHTML = `
-                <div class="resource-header">
-                    <h4>${resourceType}</h4>
-                    <span>${resource.size}</span>
-                </div>
-                <div class="resource-body">
-                    <h4>${resource.name}</h4>
-                    <p>${subject.name} - ${subject.code}</p>
-                    <div class="resource-meta">
-                        <span><i class="fas ${icon}"></i> ${resourceType}</span>
-                        ${resource.year ? `<span><i class="fas fa-calendar"></i> ${resource.year}</span>` : ''}
-                    </div>
-                    <a class="download-btn" href="${resource.filename}" download>
-                        Download <i class="fas fa-download"></i>
-                    </a>
-                </div>
-            `;
-            resourcesGrid.appendChild(resourceCard);
-        });
-    }
-
     // Loading spinner functions
     function showLoading() {
         loadingSpinner.style.display = 'flex';
+        
+        // Track loading event
+        if (typeof gtag !== 'undefined') {
+            gtag('event', 'loading_start', {
+                event_category: 'engagement',
+                event_label: 'resource_loading'
+            });
+        }
     }
 
     function hideLoading() {
@@ -378,4 +463,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialize the application
     init();
+
+    // Track time on page
+    let pageStartTime = Date.now();
+    window.addEventListener('beforeunload', function() {
+        const timeSpent = Math.round((Date.now() - pageStartTime) / 1000);
+        if (typeof gtag !== 'undefined') {
+            gtag('event', 'time_on_page', {
+                event_category: 'engagement',
+                event_label: 'session_duration',
+                time_spent_seconds: timeSpent
+            });
+        }
+    });
+
+    console.log('✅ Analytics integration complete');
 });
