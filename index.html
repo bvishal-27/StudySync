@@ -4,6 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>StudySync - Notes & PYQ Platform</title>
+    
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-N32Y7DZ69Y"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-N32Y7DZ69Y');
+    </script>
+    
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -33,7 +43,7 @@
         <div class="container hero-attractive">
             <h1>Your Ultimate Study Companion</h1>
             <p>Access high-quality notes, previous year question papers, and study resources for all subjects.</p>
-            <a href="#subjects" class="cta-btn">Start Learning <i class="fas fa-arrow-right"></i></a>
+            <a href="#subjects" class="cta-btn" id="startLearningBtn">Start Learning <i class="fas fa-arrow-right"></i></a>
         </div>
     </section>
 
@@ -84,19 +94,19 @@
                     <h3>StudySync</h3>
                     <p>Your ultimate study companion for notes, PYQs, and academic resources.</p>
                     <div class="social-links">
-                        <a href="#"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#"><i class="fab fa-twitter"></i></a>
-                        <a href="#"><i class="fab fa-instagram"></i></a>
-                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="#" class="social-link" data-platform="facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="social-link" data-platform="twitter"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-link" data-platform="instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="social-link" data-platform="linkedin"><i class="fab fa-linkedin-in"></i></a>
                     </div>
                 </div>
                 <div class="footer-column">
                     <h3>Quick Links</h3>
                     <ul>
-                        <li><a href="#">Home</a></li>
-                        <li><a href="#subjects">Subjects</a></li>
-                        <li><a href="#resources">Resources</a></li>
-                        <li><a href="#about">About</a></li>
+                        <li><a href="#" class="footer-link">Home</a></li>
+                        <li><a href="#subjects" class="footer-link">Subjects</a></li>
+                        <li><a href="#resources" class="footer-link">Resources</a></li>
+                        <li><a href="#about" class="footer-link">About</a></li>
                     </ul>
                 </div>
                 <div class="footer-column">
@@ -121,17 +131,158 @@
         <p>Loading resources...</p>
     </div>
 
+    <!-- Visitor Counter Display -->
+    <div id="analytics-counter" style="
+        position: fixed;
+        bottom: 15px;
+        right: 15px;
+        background: #2d3748;
+        color: white;
+        padding: 8px 12px;
+        border-radius: 15px;
+        font-size: 12px;
+        font-family: Arial;
+        z-index: 1000;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        display: none;
+    ">
+        👥 <span id="counter-text">Visitors: Loading...</span>
+    </div>
+
     <script src="script.js"></script>
+    
+    <!-- Enhanced Analytics Tracking -->
     <script>
-        // Visitor count fetch
-        fetch('/api/visitor-count')
-          .then(res => res.json())
-          .then(data => {
-            document.getElementById('visitorCount').textContent = `Visitors: ${data.count}`;
-          })
-          .catch(() => {
-            document.getElementById('visitorCount').textContent = '';
-          });
+        // Enhanced tracking for StudySync
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('📊 Analytics loaded for StudySync');
+            
+            // Track page view
+            gtag('event', 'page_view', {
+                page_title: document.title,
+                page_location: window.location.href,
+                site_name: 'StudySync'
+            });
+            
+            // Track "Start Learning" button click
+            const startLearningBtn = document.getElementById('startLearningBtn');
+            if (startLearningBtn) {
+                startLearningBtn.addEventListener('click', function() {
+                    gtag('event', 'cta_click', {
+                        event_category: 'engagement',
+                        event_label: 'start_learning_button',
+                        button_location: 'hero_section'
+                    });
+                });
+            }
+            
+            // Track subject clicks
+            function trackSubjectClick(subjectName) {
+                gtag('event', 'subject_click', {
+                    event_category: 'navigation',
+                    event_label: subjectName,
+                    subject_name: subjectName
+                });
+                console.log('Tracked subject click:', subjectName);
+            }
+            
+            // Track resource downloads
+            function trackResourceDownload(resourceName, resourceType, subject) {
+                gtag('event', 'resource_download', {
+                    event_category: 'download',
+                    event_label: resourceName,
+                    resource_name: resourceName,
+                    resource_type: resourceType,
+                    subject: subject
+                });
+                console.log('Tracked resource download:', resourceName, resourceType, subject);
+            }
+            
+            // Track tab switches
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            tabButtons.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabType = this.getAttribute('data-type');
+                    gtag('event', 'tab_switch', {
+                        event_category: 'navigation',
+                        event_label: tabType,
+                        tab_name: tabType
+                    });
+                });
+            });
+            
+            // Track social media clicks
+            const socialLinks = document.querySelectorAll('.social-link');
+            socialLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const platform = this.getAttribute('data-platform');
+                    gtag('event', 'social_click', {
+                        event_category: 'social',
+                        event_label: platform,
+                        social_platform: platform
+                    });
+                    alert('Social link clicked: ' + platform + ' (tracked for analytics)');
+                });
+            });
+            
+            // Track footer link clicks
+            const footerLinks = document.querySelectorAll('.footer-link');
+            footerLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    const linkText = this.textContent;
+                    gtag('event', 'footer_navigation', {
+                        event_category: 'navigation',
+                        event_label: linkText
+                    });
+                });
+            });
+            
+            // Make functions globally available for script.js
+            window.trackSubjectClick = trackSubjectClick;
+            window.trackResourceDownload = trackResourceDownload;
+            
+            // Simple visitor counter
+            function updateVisitorCounter() {
+                const counterEl = document.getElementById('analytics-counter');
+                const counterText = document.getElementById('counter-text');
+                
+                // Using a free counter API
+                fetch('https://api.countapi.xyz/hit/studysync.netlify.app/visits')
+                    .then(response => response.json())
+                    .then(data => {
+                        counterText.textContent = `Visitors: ${data.value.toLocaleString()}`;
+                        counterEl.style.display = 'block';
+                        
+                        // Track the visit
+                        gtag('event', 'site_visit', {
+                            event_category: 'engagement',
+                            event_label: 'new_visit',
+                            total_visits: data.value
+                        });
+                    })
+                    .catch(error => {
+                        console.log('Counter API unavailable');
+                        counterEl.style.display = 'none';
+                    });
+            }
+            
+            // Initialize counter
+            updateVisitorCounter();
+            
+            // Track session duration
+            let sessionStart = Date.now();
+            window.addEventListener('beforeunload', function() {
+                const sessionDuration = Math.round((Date.now() - sessionStart) / 1000);
+                gtag('event', 'session_end', {
+                    event_category: 'engagement',
+                    event_label: 'session_duration',
+                    session_length: sessionDuration
+                });
+            });
+            
+            console.log('📊 Enhanced analytics tracking initialized');
+        });
     </script>
 </body>
 </html>
